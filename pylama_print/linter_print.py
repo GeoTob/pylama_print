@@ -1,9 +1,12 @@
 import ast
 import _ast
-from pylama.lint import Linter as Abstract
+from pylama.lint import Linter as BaseLinter
 
 
-class Linter(Abstract):
+DEFAULT_ERR = 'Found `print` call.'
+
+
+class Linter(BaseLinter):
     """Linter for flagging print() functions."""
 
     @staticmethod
@@ -12,18 +15,17 @@ class Linter(Abstract):
 
         :return list: List of errors.
         """
-        import _ast
         messages = []
 
         tree = ast.parse(code, path)
 
-
-        for i, node in enumerate(ast.walk(tree)):
+        for node in ast.walk(tree):
             if isinstance(node, _ast.Call):
                 try:
                     if node.func.id == 'print':
-                        messages.append({'lnum': node.lineno, 'text': 'Found `print` call.'})
-                except AttributeError as err:
+                        msg = {'lnum': node.lineno, 'text': DEFAULT_ERR}
+                        messages.append(msg)
+                except AttributeError:
                     pass
 
         return messages
